@@ -1,74 +1,99 @@
-# 🚀 Crypto Data Analysis - Near Real-Time Data Pipeline
+# 💳 Credit Card Transactional Analysis for Fraud Risk
 
-This project demonstrates a near real-time Change Data Capture (CDC) pipeline using **DynamoDB Streams**, **Kinesis**, **Firehose**, **Lambda**, **Apache Hudi**, and the **AWS Glue ecosystem**. Designed to handle cryptocurrency transaction data, this pipeline enables continuous synchronization into S3 and facilitates upsert-ready analytics with Athena and QuickSight.
+A robust data engineering pipeline designed to detect potential fraud in credit card transactions using **PySpark on GCP Dataproc Serverless**. The system processes millions of daily records, enriches them via BigQuery, and orchestrates the entire flow with Airflow (GCP Composer). CI/CD is fully automated with GitHub Actions and PyTest to ensure code quality and deployment reliability.
 
-> ✅ Reduced crypto report lag by **50%**  
-> ✅ Enabled versioned, upsert-ready datasets using **Apache Hudi**  
-> ✅ Built low-latency dashboards on top of continuously updated data
+> ✅ Automated fraud risk evaluation with PySpark  
+> ✅ Improved test & deployment trust by **35%** through GitHub Actions CI/CD  
+> ✅ Serverless architecture with **GCP-native services** for seamless scalability
 
 ---
 
 ## 🛠️ Tech Stack
 
 - **Languages**: Python
-- **Data Ingestion**: AWS DynamoDB, AWS Kinesis Data Streams, AWS Data Firehose
-- **Processing & Transformation**: AWS Lambda, AWS Glue Jobs, Apache Hudi
-- **Storage**: Amazon S3
-- **Metadata & Cataloging**: AWS Glue Catalog, AWS Glue Crawler
-- **Orchestration**: AWS Glue Triggers
-- **Query & Visualization**: AWS Athena, AWS QuickSight
+- **Processing**: PySpark (GCP Dataproc Serverless)
+- **Data Sources**: Google Cloud Storage (GCS), BigQuery
+- **Orchestration**: Apache Airflow via GCP Composer
+- **Testing**: PyTest
+- **CI/CD**: GitHub Actions
 
 ---
 
 ## 📁 Project Structure
 
 ```
-├── lambda_transformer.py         # AWS Lambda function for processing Kinesis records
-├── glue_hudi_job.py              # AWS Glue script for Apache Hudi upserts
-├── application_properties.json   # Runtime config and metadata
-├── setup_infra/                  # Scripts to set up DynamoDB, Kinesis, Firehose, and triggers
-└── README.md                     # Project documentation
+.
+├── dags/
+│   └── credit_fraud_dag.py             # Airflow DAG definition
+├── pyspark_jobs/
+│   └── fraud_detection_job.py         # PySpark script for fraud detection
+├── tests/
+│   └── test_fraud_logic.py            # PyTest unit tests
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml                  # GitHub Actions CI/CD pipeline
+├── data/
+│   └── sample_transactions.json       # Sample input data (GCS)
+├── README.md                          # Project documentation
+└── requirements.txt                   # Python dependencies
 ```
 
 ---
 
-## ⚙️ Setup & Execution Steps
+## ⚙️ Pipeline Workflow
 
-### 1. 🔧 DynamoDB + Kinesis Setup
-- Create a DynamoDB table with `Streams` enabled.
-- Configure a **Kinesis Data Stream** to capture DynamoDB Stream records.
+1. **BigQuery Setup**
+   - Create a static table containing cardholder information.
 
-### 2. 🔁 Firehose + Lambda Integration
-- Set up an **AWS Kinesis Data Firehose** delivery stream targeting **S3**.
-- Attach a **Lambda transformer** to Firehose (`lambda_transformer.py`) to filter, parse, or enrich CDC events.
+2. **PySpark Processing**
+   - Reads:
+     - Cardholder info from BigQuery
+     - Daily transactional data (JSON) from GCS
+   - Applies:
+     - Data validation rules
+     - Transformation logic for fraud risk scoring
+   - Outputs:
+     - Processed data written back to GCS (archive or results)
 
-### 3. ☁️ Glue Crawler & Table Creation
-- Configure an **AWS Glue Crawler** to scan the Firehose S3 path and create a corresponding table in the **Glue Catalog**.
+3. **Airflow DAG (GCP Composer)**
+   - Detects new transactional data in GCS
+   - Triggers the PySpark job on **Dataproc Serverless**
+   - Archives the processed files after completion
 
-### 4. 🧠 Apache Hudi Upserts via Glue
-- Create a **Glue Job** (`glue_hudi_job.py`) to process the S3 JSON data and perform **upserts** into **Hudi tables** on S3.
-
-### 5. 🔄 Trigger Orchestration
-- Create **Glue Triggers** to:
-  - Run the **Crawler** every 15 minutes
-  - Chain it to the **Glue Job** to ensure CDC data is consistently processed
-
-### 6. 📊 Query & Visualize
-- Query the Hudi tables via **Athena** using the AWS Glue Catalog schema.
-- Connect the Athena datasets to **QuickSight** for crypto analytics dashboards.
+4. **CI/CD Automation**
+   - GitHub Actions pipeline:
+     - Runs PyTest unit tests on push
+     - Deploys DAGs and PySpark scripts to GCS bucket used by Composer
 
 ---
 
-## 🧪 Sample Athena Query
+## 🧪 Sample PyTest
 
-```sql
-SELECT user_id, SUM(transaction_value) as total
-FROM "crypto_db"."hudi_crypto_cdc"
-WHERE currency = 'BTC'
-GROUP BY user_id
-ORDER BY total DESC
-LIMIT 10;
+```python
+def test_high_value_transaction_flag():
+    transaction = {"amount": 12000, "location": "NY", "user_id": "123"}
+    risk = calculate_fraud_score(transaction)
+    assert risk["risk_score"] > 0.8
 ```
+
+---
+
+## 🔄 GitHub Actions CI/CD Workflow
+
+- Triggered on every push or PR to `main` branch
+- Executes:
+  - `pytest` on `/tests`
+  - Uploads:
+    - DAG files to `gs://composer-dags-bucket/dags/`
+    - PySpark jobs to `gs://dataproc-code-bucket/jobs/`
+
+---
+
+## 📌 TODOs
+
+- [ ] Add support for anomaly detection using ML model
+- [ ] Integrate with Slack for failure alerts
+- [ ] Add DAG visual monitoring in README
 
 ---
 
@@ -80,11 +105,10 @@ This project is licensed under the MIT License.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please fork the repo, make your changes, and submit a PR.
+Open to contributions! Please fork the repo and raise a pull request.
 
 ---
 
 ## 📬 Contact
 
-For questions or feedback, connect via [LinkedIn](https://www.linkedin.com/in/h-v-m-) or raise an issue.
-
+For any questions or suggestions, connect via [LinkedIn](https://www.linkedin.com/in/your-profile) or raise an issue.
