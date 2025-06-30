@@ -22,7 +22,6 @@ A robust data engineering pipeline designed to detect potential fraud in credit 
 ## 📁 Project Structure
 
 ```
-.
 ├── dags/
 │   └── credit_fraud_dag.py             # Airflow DAG definition
 ├── pyspark_jobs/
@@ -89,14 +88,6 @@ def test_high_value_transaction_flag():
 
 ---
 
-## 📌 TODOs
-
-- [ ] Add support for anomaly detection using ML model
-- [ ] Integrate with Slack for failure alerts
-- [ ] Add DAG visual monitoring in README
-
----
-
 ## 📜 License
 
 This project is licensed under the MIT License.
@@ -111,4 +102,4 @@ Open to contributions! Please fork the repo and raise a pull request.
 
 ## 📬 Contact
 
-For any questions or suggestions, connect via [LinkedIn](https://www.linkedin.com/in/your-profile) or raise an issue.
+For any questions or suggestions, connect via [LinkedIn](https://www.linkedin.com/in/h-v-m-) or raise an issue.
